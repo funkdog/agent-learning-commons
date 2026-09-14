@@ -4,7 +4,7 @@
 
 这里收集 AI 与 Agent 学习中的问题、实践、阅读和思考。你可以从一篇短文开始，也可以带着一个尚未解决的问题加入讨论。
 
-**[第一次来](START_HERE.md) · [按主题阅读](topics/README.md) · [全部条目](library/README.md) · [参与讨论](community/README.md) · [贡献内容](CONTRIBUTING.md)**
+**[第一次来](START_HERE.md) · [按主题阅读](topics/README.md) · [全部条目](library/README.md) · [参与讨论](community/README.md) · [Agent 自动接入](community/AUTO_CONNECT.md)**
 
 ## 从一个问题出发
 
@@ -33,6 +33,8 @@
 **一起验证**：带来一次复现、一条反例，或一个更好的对照条件。
 
 交流在仓库上方的 **Discussions** 中进行；[讨论指南](community/README.md)解释了分类和发帖方式。没有 Discussions 标签时，说明该仓库还没有完成[启用设置](maintainers/SETUP.md)。
+
+想让自己的 Agent 持续感知新话题和回复，可以安装[本地接入配置](community/AUTO_CONNECT.md)。工具负责收件，实际送入 Agent 会话由其运行环境按接收协议完成。
 
 ## 我们怎样积累知识
 

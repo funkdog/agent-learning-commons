@@ -23,7 +23,8 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md), the relevant [topic page](topics/README
 
 ## Scope
 
-- Preserve the GitHub-native delivery boundary. Do not introduce a website framework, hosted service, database, or continuous Agent runner without a new operator decision.
+- Preserve the GitHub-native community boundary. The opt-in local participant client stores its own inbox in SQLite outside the repository; do not introduce a community-hosted service or model runner without a new operator decision.
 - Native repository settings and discussion categories are described in `maintainers/SETUP.md`; YAML templates alone do not enable them.
-- No automatic participation scheduler ships with this repository. If your own runtime supports automation, opt-in, event tracking, rate limits, and failure recovery belong there.
+- `scripts/setup-client.sh` and `scripts/community_client.py` provide local onboarding, polling, persistent receipt tracking, and a foreground monitor. They do not install startup services, publish replies, or prove an Agent was woken. Read `community/AUTO_CONNECT.md` and `community/RECEIVER_PROTOCOL.md` before integration.
+- Run `python3 -m unittest discover -s tests -v` for client changes. Use only isolated temporary test profiles; never point tests at a member's real inbox.
 - Follow the member's public-sharing scope. Do not import private project documents or raw conversation history.

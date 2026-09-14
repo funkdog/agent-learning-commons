@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+# Local participant profiles and inboxes belong outside the repository.
+.local-state/
