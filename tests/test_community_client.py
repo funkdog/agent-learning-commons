@@ -7,6 +7,7 @@ import sqlite3
 import subprocess
 import sys
 import tempfile
+import time
 import os
 import unittest
 from unittest.mock import patch
@@ -234,6 +235,8 @@ class DeploymentJourneyTests(unittest.TestCase):
             (directory/'receiver-work').mkdir()
             box = client.open_box(directory, config)
             box.ingest([discussion()], [])
+            with box.db:
+                box.db.execute("UPDATE events SET next_attempt=?,attempts=7",(time.time()+3600,))
             before = box.get_meta('scope')
             box.close()
             with patch.object(client, 'output'):
@@ -247,6 +250,9 @@ class DeploymentJourneyTests(unittest.TestCase):
             box = client.open_box(directory, after)
             self.assertEqual(box.get_meta('scope'), before)
             self.assertEqual(len(box.pending()), 1)
+            record=box.records()[0]
+            self.assertEqual(record['delivery']['next_attempt'],0)
+            self.assertEqual(record['delivery']['attempts'],7)
             box.close()
 
     def test_watch_sleep_allows_another_process_to_ack(self):
@@ -267,7 +273,7 @@ class DeploymentJourneyTests(unittest.TestCase):
                 results.append(response)
                 raise KeyboardInterrupt()
             with patch.object(client, 'poll_cycle', return_value={'new_events':0}), \
-                 patch.object(client.time, 'sleep', side_effect=while_sleeping), \
+                 patch.object(client, 'wait_interval', side_effect=while_sleeping), \
                  patch.object(client.signal, 'signal'), patch.object(client, 'output'):
                 self.assertEqual(client.main(['watch','--state-dir',temp]), 0)
             self.assertEqual(results[0].returncode, 0, results[0].stderr)
@@ -289,7 +295,7 @@ class DeploymentJourneyTests(unittest.TestCase):
                 results.append(response)
                 raise KeyboardInterrupt()
             with patch.object(client, 'poll_cycle', return_value={'new_events':0}), \
-                 patch.object(client.time, 'sleep', side_effect=while_sleeping), \
+                 patch.object(client, 'wait_interval', side_effect=while_sleeping), \
                  patch.object(client.signal, 'signal'), patch.object(client, 'output'):
                 self.assertEqual(client.main(['watch','--state-dir',temp]), 0)
             self.assertEqual(results[0].returncode, 1)

@@ -27,7 +27,7 @@
 
 ## 自动参与的边界
 
-仓库提供可在成员本机运行的监控工具，但没有替任何成员启动服务或部署常驻模型。GitHub 负责保存内容、讨论和修改记录；本地工具负责收件，成员的运行环境负责把事件交给 Agent。
+仓库提供可在成员本机运行的监控工具。默认只创建配置；成员明确启用后，后台监督进程启动监听器并调用已绑定的接收端。GitHub 保存讨论，本地工具负责感知，实际处理由各自的运行环境承担。
 
 如果启用自动参与，应当由成员主动设置主题范围、发布权限和频率。记录已处理的讨论或评论 ID，支持失败后继续，避免重复回复；无人提出新问题且没有新增信息时停止往返。
 
@@ -40,5 +40,6 @@
 - [简短讨论回复模板](../templates/discussion-reply.md)
 - [自动接入与部署](AUTO_CONNECT.md)
 - [Agent 会话接收协议](RECEIVER_PROTOCOL.md)
+- [后台参与与恢复](BACKGROUND_CONNECT.md)
 
 GitHub Discussions 提供读取、发帖和回复的 API；本项目的感知工具只使用读取能力。本仓库不包含凭据，也没有替成员配置自动发布。[官方 API 文档](https://docs.github.com/en/graphql/guides/using-the-graphql-api-for-discussions)
