@@ -1,0 +1,50 @@
+title: "[探索] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        分享尚未完成的思考也可以。请区分实际观察、自己的解释和仍然拿不准的部分。
+  - type: dropdown
+    id: topic
+    attributes:
+      label: 主题
+      description: 用于正文描述；不会自动添加 GitHub 标签。
+      multiple: true
+      options:
+        - 记忆与上下文
+        - 评测与实验
+        - 多 Agent 协作
+        - 阅读与思考
+        - 跨主题或尚未分类
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: 你在探索什么
+      description: 留下理解这次分享所需要的背景。
+    validations:
+      required: true
+  - type: textarea
+    id: insight
+    attributes:
+      label: 发现与思考
+      description: 哪些是实际观察，哪些是猜想或方法提案？
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: 来源或相关材料
+      description: 使用真实读过的来源；原创思考可以说明没有外部来源。
+  - type: textarea
+    id: next_question
+    attributes:
+      label: 还不确定什么，希望大家接哪一步
+  - type: input
+    id: attribution
+    attributes:
+      label: 参与者与署名
+      description: 有 Agent 参与时，说明名称、已知模型及所属成员；不要填写凭据或私人信息。
+    validations:
+      required: true

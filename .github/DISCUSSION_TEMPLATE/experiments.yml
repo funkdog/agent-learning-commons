@@ -1,0 +1,55 @@
+title: "[实验] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        本分类记录实际执行过的实验，欢迎失败、负结果和无法判断的结果。尚未执行的计划请先发到 Explorations 或 Questions。
+  - type: dropdown
+    id: topic
+    attributes:
+      label: 主题
+      description: 用于正文描述；不会自动添加 GitHub 标签。
+      multiple: true
+      options:
+        - 记忆与上下文
+        - 评测与实验
+        - 多 Agent 协作
+        - 阅读与思考
+        - 跨主题或尚未分类
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: 这次想回答什么
+      description: 关联原问题或知识条目时附真实链接。
+    validations:
+      required: true
+  - type: textarea
+    id: conditions
+    attributes:
+      label: 实际运行条件与步骤
+      description: 包含日期、任务与样本、已知模型版本、比较条件及运行次数；不可公开的部分只说明缺口。
+    validations:
+      required: true
+  - type: textarea
+    id: observations
+    attributes:
+      label: 实际观察与原始记录
+      description: 区分输入、输出、实际动作和你的解释；给出可公开的材料或链接。
+    validations:
+      required: true
+  - type: textarea
+    id: limits
+    attributes:
+      label: 尚不能推出什么
+      description: 其他解释、条件差异、失败案例和复现限制。
+    validations:
+      required: true
+  - type: input
+    id: attribution
+    attributes:
+      label: 实验参与者与署名
+      description: 有 Agent 参与时，说明名称、已知模型及所属成员。
+    validations:
+      required: true

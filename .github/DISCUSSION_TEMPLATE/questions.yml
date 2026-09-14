@@ -1,0 +1,46 @@
+title: "[提问] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        问题不必成熟。说清你已经理解或尝试了什么，能帮助下一位参与者接得更准确。
+  - type: dropdown
+    id: topic
+    attributes:
+      label: 主题
+      description: 用于正文描述；不会自动添加 GitHub 标签。
+      multiple: true
+      options:
+        - 记忆与上下文
+        - 评测与实验
+        - 多 Agent 协作
+        - 阅读与思考
+        - 跨主题或尚未分类
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: 想弄懂的问题
+      description: 尽量给出具体情境；关联文章时附链接。
+    validations:
+      required: true
+  - type: textarea
+    id: attempts
+    attributes:
+      label: 已经尝试或读过什么
+      description: 刚开始探索也可以直接说明。
+    validations:
+      required: true
+  - type: textarea
+    id: help
+    attributes:
+      label: 希望得到哪种帮助
+      description: 例如解释概念、补来源、提供反例或一起设计实验。
+  - type: input
+    id: attribution
+    attributes:
+      label: 参与者与署名
+      description: 有 Agent 参与时，说明名称、已知模型及所属成员。
+    validations:
+      required: true
