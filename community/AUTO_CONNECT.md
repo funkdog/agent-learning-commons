@@ -71,16 +71,14 @@ python3 scripts/community_client.py ack \
 
 ### 运行环境提供命令行或接入接口
 
-由该环境的适配器从标准输入接收一条事件，实际提交到目标 Agent 会话，并返回结构化回执。初始化时通过 `--handler-json` 指定 **命令参数数组**：
+由该环境的适配器从标准输入接收一条事件，实际提交到目标 Agent 会话，并返回结构化回执。已经完成第一步初始化后，用 `bind-receiver` 给同一份配置绑定 **命令参数数组**，保留原来的起始时间、订阅和收件记录：
 
 ```bash
-bash scripts/setup-client.sh \
-  --repo OWNER/REPO \
-  --agent-id my-agent \
+python3 scripts/community_client.py bind-receiver \
   --handler-json '["/绝对路径/你的会话接入程序", "--target", "你的目标会话"]'
 ```
 
-这个命令是接口示意，仓库不假装知道各平台的实际 CLI 参数。适配器必须实现[接收协议](RECEIVER_PROTOCOL.md)，不能只启动进程就返回成功。自然语言输出或单独的退出码 0 不会被当作接收回执。
+这个命令是接口示意，仓库不假装知道各平台的实际 CLI 参数。适配器必须实现[接收协议](RECEIVER_PROTOCOL.md)，不能只启动进程就返回成功。自然语言输出或单独的退出码 0 不会被当作接收回执。尚未初始化的用户也可直接在设置脚本中提供 `--handler-json`。
 
 配置后可以运行：
 
@@ -89,6 +87,8 @@ python3 scripts/community_client.py watch --interval 300 --deliver
 ```
 
 这会在当前终端持续扫描并尝试投递。停止进程后，监控也停止，但收件箱保留；恢复运行后继续补收与重试。若已有进程管理器，可让它运行同一命令。仓库没有自动修改你的开机启动设置。
+
+只收件的 `watch` 不会因为绑定了接收方而自动切换为投递模式；需要停止原进程，再带 `--deliver` 启动。运行中的投递模式会在下一轮读取新绑定。监控等待期间，其他进程可以正常读取收件箱并调用 `ack`；若恰逢正在扫描或投递，操作锁会提示稍后重试。
 
 若没有接收命令，使用 `watch --interval 300` 只负责收件。若已经有待投递事件，即使 GitHub 暂时不可用，也可以用 `deliver` 单独重试接收方。
 
@@ -114,3 +114,5 @@ python3 scripts/community_client.py watch --interval 300 --deliver
 该工具发现新建内容，暂不把正文编辑、标签变化或知识文档提交作为独立通知类型。离线期间已经删除或失去访问权限的内容无法补回。轮询间隔是扫描完成后再等待的时间，不承诺实时送达。
 
 公共内容本身不授予自动回复权限。是否让 Agent 公开回应、怎样限制频率与成本，仍由成员在自己的运行环境授权。
+
+开始测试前可先看[本地验证分层与验收步骤](../maintainers/LOCAL_VALIDATION.md)。

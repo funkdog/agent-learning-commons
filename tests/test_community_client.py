@@ -224,6 +224,90 @@ class ProviderTests(unittest.TestCase):
                 api.query('query { viewer { login } }', {})
 
 class DeploymentJourneyTests(unittest.TestCase):
+    def test_bind_receiver_preserves_profile_and_pending_events(self):
+        with tempfile.TemporaryDirectory() as temp:
+            directory = pathlib.Path(temp)
+            config = {'v':1,'repo':'example/commons','login':'alice','agent_id':'one',
+                      'started_at':START,'gh':'gh','topics':['memory'],'handler':[],
+                      'max_calls':10,'handler_timeout':60}
+            client.save_new_config(directory, config)
+            (directory/'receiver-work').mkdir()
+            box = client.open_box(directory, config)
+            box.ingest([discussion()], [])
+            before = box.get_meta('scope')
+            box.close()
+            with patch.object(client, 'output'):
+                result = client.main(['bind-receiver','--handler-json',json.dumps([sys.executable,'-c','print(1)']),
+                                      '--state-dir',temp])
+            self.assertEqual(result, 0)
+            after = client.load_config(directory)
+            for key in ('repo','login','agent_id','started_at','topics'):
+                self.assertEqual(after[key], config[key])
+            self.assertTrue(after['handler'])
+            box = client.open_box(directory, after)
+            self.assertEqual(box.get_meta('scope'), before)
+            self.assertEqual(len(box.pending()), 1)
+            box.close()
+
+    def test_watch_sleep_allows_another_process_to_ack(self):
+        with tempfile.TemporaryDirectory() as temp:
+            directory = pathlib.Path(temp)
+            config = {'v':1,'repo':'example/commons','login':'alice','agent_id':'one',
+                      'started_at':START,'gh':'gh','topics':[],'handler':[],
+                      'max_calls':10,'handler_timeout':60}
+            client.save_new_config(directory, config)
+            box = client.open_box(directory, config)
+            box.ingest([discussion()], [])
+            box.close()
+            results = []
+            def while_sleeping(seconds):
+                response = subprocess.run([sys.executable,str(CLIENT),'ack','--state-dir',temp,
+                                           '--event-id','example/commons:D1','--receipt-ref','test:agent-message'],
+                                          text=True,capture_output=True,timeout=5)
+                results.append(response)
+                raise KeyboardInterrupt()
+            with patch.object(client, 'poll_cycle', return_value={'new_events':0}), \
+                 patch.object(client.time, 'sleep', side_effect=while_sleeping), \
+                 patch.object(client.signal, 'signal'), patch.object(client, 'output'):
+                self.assertEqual(client.main(['watch','--state-dir',temp]), 0)
+            self.assertEqual(results[0].returncode, 0, results[0].stderr)
+            box = client.open_box(directory, config)
+            self.assertEqual(box.pending(), [])
+            box.close()
+
+    def test_watch_singleton_still_holds_while_operation_lock_is_free(self):
+        with tempfile.TemporaryDirectory() as temp:
+            directory = pathlib.Path(temp)
+            config = {'v':1,'repo':'example/commons','login':'alice','agent_id':'one',
+                      'started_at':START,'gh':str(directory/'no-network-gh'),'topics':[],
+                      'handler':[],'max_calls':10,'handler_timeout':60}
+            client.save_new_config(directory, config)
+            results = []
+            def while_sleeping(seconds):
+                response = subprocess.run([sys.executable,str(CLIENT),'watch','--state-dir',temp],
+                                          text=True,capture_output=True,timeout=5)
+                results.append(response)
+                raise KeyboardInterrupt()
+            with patch.object(client, 'poll_cycle', return_value={'new_events':0}), \
+                 patch.object(client.time, 'sleep', side_effect=while_sleeping), \
+                 patch.object(client.signal, 'signal'), patch.object(client, 'output'):
+                self.assertEqual(client.main(['watch','--state-dir',temp]), 0)
+            self.assertEqual(results[0].returncode, 1)
+            self.assertIn('active', results[0].stderr)
+
+    def test_invalid_receiver_binding_leaves_original_profile_unchanged(self):
+        with tempfile.TemporaryDirectory() as temp:
+            directory = pathlib.Path(temp)
+            config = {'v':1,'repo':'example/commons','login':'alice','agent_id':'one',
+                      'started_at':START,'gh':'gh','topics':['memory'],'handler':[],
+                      'max_calls':10,'handler_timeout':60}
+            client.save_new_config(directory, config)
+            before = (directory/'config.json').read_bytes()
+            with patch.object(sys, 'stderr'):
+                result = client.main(['bind-receiver','--handler-json','[]','--state-dir',temp])
+            self.assertEqual(result, 1)
+            self.assertEqual((directory/'config.json').read_bytes(), before)
+
     def test_inbox_only_profile_cannot_claim_delivery(self):
         with tempfile.TemporaryDirectory() as temp:
             directory = pathlib.Path(temp)

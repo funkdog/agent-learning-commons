@@ -17,6 +17,7 @@ import sqlite3
 import subprocess
 import sys
 import time
+import uuid
 
 VERSION = 1
 PAGE = 'pageInfo { hasNextPage endCursor }'
@@ -290,6 +291,34 @@ def save_new_config(directory, config):
         stream.write('\n')
     os.chmod(directory / 'config.json', 0o600)
 
+def receiver_command(raw, required=False):
+    handler = json.loads(raw) if raw else []
+    if not isinstance(handler, list) or any(not isinstance(x, str) or '\x00' in x for x in handler):
+        raise ClientError('handler-json must be an executable argument array, not shell text')
+    if required and not handler:
+        raise ClientError('A nonempty receiver command is required')
+    if handler:
+        executable = shutil.which(handler[0])
+        if not executable:
+            raise ClientError('Receiver executable not found')
+        handler[0] = str(Path(executable).resolve())
+    return handler
+
+def save_receiver_config(directory, config):
+    temporary = directory / ('.config-' + uuid.uuid4().hex + '.pending')
+    with temporary.open('x', encoding='utf8') as stream:
+        os.chmod(temporary, 0o600)
+        json.dump(config, stream, ensure_ascii=False, indent=2)
+        stream.write('\n')
+        stream.flush()
+        os.fsync(stream.fileno())
+    os.replace(temporary, directory / 'config.json')
+    directory_fd = os.open(str(directory), os.O_RDONLY)
+    try:
+        os.fsync(directory_fd)
+    finally:
+        os.close(directory_fd)
+
 def load_config(directory):
     try:
         config = json.loads((directory / 'config.json').read_text(encoding='utf8'))
@@ -313,13 +342,13 @@ def load_config(directory):
     return config
 
 @contextlib.contextmanager
-def process_lock(directory):
+def process_lock(directory, name='client.lock'):
     try:
         import fcntl
     except ImportError:
         raise ClientError('This client currently supports macOS and Linux')
     directory.mkdir(parents=True, exist_ok=True, mode=0o700)
-    with (directory / 'client.lock').open('a') as lock:
+    with (directory / name).open('a') as lock:
         try:
             fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
@@ -373,6 +402,9 @@ def main(argv=None):
     init.add_argument('--max-calls', type=int, default=120)
     init.add_argument('--handler-json', help='Local trusted executable argument array; receives JSON on stdin')
     init.add_argument('--handler-timeout', type=int, default=60)
+    bind = command('bind-receiver', 'Bind a receiver to an existing profile without resetting its inbox')
+    bind.add_argument('--handler-json', required=True)
+    bind.add_argument('--handler-timeout', type=int)
     poll = command('poll', 'Scan once, optionally deliver pending messages')
     poll.add_argument('--deliver', action='store_true')
     watch = command('watch', 'Run a foreground monitor until stopped')
@@ -398,14 +430,7 @@ def main(argv=None):
                 raise ClientError('GitHub CLI, positive query budget, and a 1-300 second receiver timeout are required')
             if (directory / 'config.json').exists() or (directory / 'state.sqlite3').exists():
                 raise ClientError('Profile already exists; use it or choose another state directory; existing state will not be overwritten')
-            handler = json.loads(args.handler_json) if args.handler_json else []
-            if not isinstance(handler, list) or any(not isinstance(x, str) or '\x00' in x for x in handler):
-                raise ClientError('handler-json must be an executable argument array, not shell text')
-            if handler:
-                executable = shutil.which(handler[0])
-                if not executable:
-                    raise ClientError('Receiver executable not found')
-                handler[0] = str(Path(executable).resolve())
+            handler = receiver_command(args.handler_json)
             started_at = utc_now()
             api = GitHub(args.gh, args.max_calls)
             login, repo = api.identity(args.repo)
@@ -422,6 +447,19 @@ def main(argv=None):
                     'monitor_running':False, 'note':'Run poll to check, then watch or schedule poll in your existing runtime. Configuration is not Agent delivery.'})
             return 0
         config = load_config(directory)
+        if args.command == 'bind-receiver':
+            handler = receiver_command(args.handler_json, required=True)
+            if args.handler_timeout is not None and not 1 <= args.handler_timeout <= 300:
+                raise ClientError('Receiver timeout must be between 1 and 300 seconds')
+            with process_lock(directory):
+                config = load_config(directory)
+                config['handler'] = handler
+                if args.handler_timeout is not None:
+                    config['handler_timeout'] = args.handler_timeout
+                save_receiver_config(directory, config)
+            output({'receiver_bound':True, 'inbox_preserved':True, 'agent_wake_verified':False,
+                    'note':'Use deliver or watch --deliver to request delivery. Inbox-only watch does not change modes automatically.'})
+            return 0
         if (getattr(args, 'deliver', False) or args.command == 'deliver') and not config['handler']:
             raise ClientError('No receiver configured; use inbox mode or configure a trusted receiver before requesting delivery')
         if args.command == 'doctor':
@@ -438,10 +476,12 @@ def main(argv=None):
             if args.interval < 60:
                 raise ClientError('Poll interval must be at least 60 seconds')
             signal.signal(signal.SIGTERM, lambda *_: (_ for _ in ()).throw(KeyboardInterrupt()))
-            with process_lock(directory):
+            with process_lock(directory, 'watch.lock'):
                 while True:
                     try:
-                        output(poll_cycle(directory, config, args.deliver))
+                        with process_lock(directory):
+                            config = load_config(directory)
+                            output(poll_cycle(directory, config, args.deliver))
                     except ClientError as exc:
                         output({'error':str(exc), 'retry_after_seconds':args.interval})
                     time.sleep(args.interval)
