@@ -51,7 +51,11 @@
 
 [文件接收器](../receivers/file_inbox.py)把事件原子写入独立目录，并返回文件引用。它明确报告 `agent_woken: false`；只有文件已经到达，不能把它作为模型已执行的证据。
 
-特定平台的会话适配器尚未内置。直接调用某个模型 CLI 并让它自行输出 `accepted`，也不等于平台已持久接受任务。应在平台消息 / 任务确实创建后，由适配器生成回执。
+另提供 [Claude Code 接收端](../receivers/claude_code.py)：自动启动实际 CLI 会话，检查运行元数据和 session ID，保存结果之后由适配器生成回执。见[后台接入说明](BACKGROUND_CONNECT.md)。其他平台仍可按本协议添加接收端。
+
+[Codex CLI 接收端](../receivers/codex_cli.py)已用于完整的后台真实验证。它根据原生 thread / turn 事件与持久模型结果生成回执，而不是要求当前聊天 Agent 手动确认。
+
+直接让模型在正文里自行输出 `accepted`，不等于平台已持久接受任务。回执必须由接收适配器根据真实运行或接收结果生成。
 
 ## 凭据和发布范围
 

@@ -20,6 +20,7 @@ import time
 import uuid
 
 VERSION = 1
+wait_interval = time.sleep
 PAGE = 'pageInfo { hasNextPage endCursor }'
 COMMENT = 'id body url createdAt author { login } replyTo { id author { login } }'
 TOP_COMMENT = COMMENT + ' replies(first: 20) { nodes { ' + COMMENT + ' } ' + PAGE + ' }'
@@ -401,7 +402,16 @@ def main(argv=None):
     init.add_argument('--gh', default=shutil.which('gh'))
     init.add_argument('--max-calls', type=int, default=120)
     init.add_argument('--handler-json', help='Local trusted executable argument array; receives JSON on stdin')
-    init.add_argument('--handler-timeout', type=int, default=60)
+    init.add_argument('--handler-timeout', type=int)
+    init.add_argument('--runtime', choices=['inbox','claude-code','codex-cli'], default='inbox')
+    init.add_argument('--claude', default=shutil.which('claude'))
+    init.add_argument('--codex', default=shutil.which('codex'))
+    init.add_argument('--agent-model')
+    init.add_argument('--agent-budget-usd', type=float)
+    init.add_argument('--agent-max-runs', type=int, default=2)
+    init.add_argument('--enable', action='store_true')
+    init.add_argument('--interval', type=int, default=300)
+    init.add_argument('--max-events', type=int, default=0)
     bind = command('bind-receiver', 'Bind a receiver to an existing profile without resetting its inbox')
     bind.add_argument('--handler-json', required=True)
     bind.add_argument('--handler-timeout', type=int)
@@ -418,10 +428,27 @@ def main(argv=None):
     ack = command('ack', 'Acknowledge an event after your Agent runtime has accepted it')
     ack.add_argument('--event-id', required=True)
     ack.add_argument('--receipt-ref', required=True)
+    enable = command('enable', 'Explicitly start a background supervisor and listener')
+    enable.add_argument('--interval', type=int, default=300)
+    enable.add_argument('--inbox-only', action='store_true')
+    enable.add_argument('--max-events', type=int, default=0)
+    command('disable', 'Stop only this profile service; preserve its data')
+    command('service-status', 'Read live supervisor health')
+    command('restart-monitor', 'Interrupt the owned monitor and verify supervisor recovery')
     args = parser.parse_args(argv)
     directory = state_path(args.state_dir)
     try:
+        if args.command in ('enable','disable','service-status','restart-monitor'):
+            service_args = [sys.executable,str(Path(__file__).with_name('community_service.py')),
+                            args.command,'--state-dir',str(directory)]
+            if args.command == 'enable':
+                service_args += ['--interval',str(args.interval),'--max-events',str(args.max_events)]
+                if args.inbox_only:
+                    service_args.append('--inbox-only')
+            return subprocess.call(service_args)
         if args.command == 'init':
+            if args.handler_timeout is None:
+                args.handler_timeout = 240 if args.runtime != 'inbox' else 60
             if not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', args.repo):
                 raise ClientError('Repository must be OWNER/REPO on github.com')
             if not re.fullmatch(r'[A-Za-z0-9_-]{1,64}', args.agent_id):
@@ -431,6 +458,33 @@ def main(argv=None):
             if (directory / 'config.json').exists() or (directory / 'state.sqlite3').exists():
                 raise ClientError('Profile already exists; use it or choose another state directory; existing state will not be overwritten')
             handler = receiver_command(args.handler_json)
+            if args.runtime == 'claude-code':
+                if args.agent_budget_usd is None:
+                    args.agent_budget_usd = 0.5
+                if handler or not args.claude or not 0 < args.agent_budget_usd <= 10 or args.agent_max_runs < 1 or args.handler_timeout < 20:
+                    raise ClientError('Claude runtime requires its executable, a bounded budget, positive run limit, and no custom handler-json')
+                adapter = Path(__file__).resolve().parents[1] / 'receivers' / 'claude_code.py'
+                probe = subprocess.run([sys.executable,str(adapter),'--claude',args.claude,'--probe'],text=True,capture_output=True,timeout=45)
+                if probe.returncode:
+                    raise ClientError('Claude runtime preflight failed; run receivers/claude_code.py --probe to inspect readiness')
+                handler = [sys.executable,str(adapter),'--claude',str(Path(args.claude).resolve()),
+                           '--directory',str(directory/'claude-results'),'--model',args.agent_model or 'sonnet',
+                           '--max-budget-usd',str(args.agent_budget_usd),'--max-runs',str(args.agent_max_runs),
+                           '--timeout',str(min(180,args.handler_timeout-10))]
+            if args.runtime == 'codex-cli':
+                if handler or not args.codex or args.agent_budget_usd is not None or args.agent_max_runs < 1 or args.handler_timeout < 20:
+                    raise ClientError('Codex requires its executable and a positive run limit; dollar-budget flags are not supported by this adapter')
+                adapter = Path(__file__).resolve().parents[1] / 'receivers' / 'codex_cli.py'
+                probe = subprocess.run([sys.executable,str(adapter),'--codex',args.codex,'--probe'],text=True,capture_output=True,timeout=90)
+                if probe.returncode:
+                    raise ClientError('Codex runtime preflight failed; run receivers/codex_cli.py --probe to inspect readiness')
+                handler = [sys.executable,str(adapter),'--codex',str(Path(args.codex).resolve()),
+                           '--directory',str(directory/'codex-results'),'--max-runs',str(args.agent_max_runs),
+                           '--timeout',str(min(180,args.handler_timeout-10))]
+                if args.agent_model:
+                    handler += ['--model',args.agent_model]
+            if args.enable and (not handler or args.interval < 60 or args.max_events < 0):
+                raise ClientError('Explicit enable requires a receiver, interval >=60, and nonnegative max-events')
             started_at = utc_now()
             api = GitHub(args.gh, args.max_calls)
             login, repo = api.identity(args.repo)
@@ -442,9 +496,19 @@ def main(argv=None):
                 (directory / 'receiver-work').mkdir(exist_ok=True, mode=0o700)
                 box = open_box(directory, config)
                 box.close()
-            output({'profile_created':True, 'repo':repo, 'login':login, 'agent_id':args.agent_id,
+            initialization = {'profile_created':True, 'repo':repo, 'login':login, 'agent_id':args.agent_id,
                     'state_dir':str(directory), 'mode':'receiver_configured' if handler else 'inbox_only',
-                    'monitor_running':False, 'note':'Run poll to check, then watch or schedule poll in your existing runtime. Configuration is not Agent delivery.'})
+                    'monitor_running':False, 'note':'Configuration is not Agent delivery.'}
+            if args.enable:
+                service_args = [sys.executable,str(Path(__file__).with_name('community_service.py')),
+                                'enable','--state-dir',str(directory),'--interval',str(args.interval),
+                                '--max-events',str(args.max_events)]
+                enabled = subprocess.run(service_args,text=True,capture_output=True,timeout=60)
+                if enabled.returncode:
+                    raise ClientError('Profile was created but service startup failed; inspect service-status and retry enable')
+                initialization['service'] = json.loads(enabled.stdout)
+                initialization['monitor_running'] = initialization['service'].get('monitor_live',False)
+            output(initialization)
             return 0
         config = load_config(directory)
         if args.command == 'bind-receiver':
@@ -457,6 +521,12 @@ def main(argv=None):
                 if args.handler_timeout is not None:
                     config['handler_timeout'] = args.handler_timeout
                 save_receiver_config(directory, config)
+                box = open_box(directory,config)
+                try:
+                    with box.db:
+                        box.db.execute("UPDATE events SET next_attempt=0 WHERE state='pending'")
+                finally:
+                    box.close()
             output({'receiver_bound':True, 'inbox_preserved':True, 'agent_wake_verified':False,
                     'note':'Use deliver or watch --deliver to request delivery. Inbox-only watch does not change modes automatically.'})
             return 0
@@ -484,7 +554,7 @@ def main(argv=None):
                             output(poll_cycle(directory, config, args.deliver))
                     except ClientError as exc:
                         output({'error':str(exc), 'retry_after_seconds':args.interval})
-                    time.sleep(args.interval)
+                    wait_interval(args.interval)
         if args.command == 'poll':
             with process_lock(directory):
                 output(poll_cycle(directory, config, args.deliver))

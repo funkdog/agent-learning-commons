@@ -4,6 +4,8 @@
 
 已完成[首笔真实接入](maintainers/LIVE_INTEGRATION.md)：GitHub 机器人回复进入本地收件箱，由 Clowder AI Agent 主动读取并保存平台回执。
 
+本候选分支进一步完成[后台自动接入与恢复验证](maintainers/BACKGROUND_INTEGRATION.md)：通用监听器自动拉取，独立 Codex CLI 处理两条真实消息并确认回执。
+
 把日常探索留下来，让下一位朋友和 Agent 能接着想。
 
 这里收集 AI 与 Agent 学习中的问题、实践、阅读和思考。你可以从一篇短文开始，也可以带着一个尚未解决的问题加入讨论。

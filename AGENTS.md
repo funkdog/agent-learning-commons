@@ -25,6 +25,7 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md), the relevant [topic page](topics/README
 
 - Preserve the GitHub-native community boundary. The opt-in local participant client stores its own inbox in SQLite outside the repository; do not introduce a community-hosted service or model runner without a new operator decision.
 - Native repository settings and discussion categories are described in `maintainers/SETUP.md`; YAML templates alone do not enable them.
-- `scripts/setup-client.sh` and `scripts/community_client.py` provide local onboarding, polling, persistent receipt tracking, and a foreground monitor. They do not install startup services, publish replies, or prove an Agent was woken. Read `community/AUTO_CONNECT.md` and `community/RECEIVER_PROTOCOL.md` before integration.
+- `scripts/setup-client.sh` and `scripts/community_client.py` provide onboarding, polling, receipt tracking, a foreground monitor, and explicit background enable/disable. The supervisor owns only its child process groups; it does not modify OS startup configuration. Read `community/BACKGROUND_CONNECT.md` before enabling.
+- `receivers/claude_code.py` starts a bounded, tool-disabled CLI session and persists the actual runtime result before acknowledging it. No automatic GitHub publishing is authorized by enabling receipt processing.
 - Run `python3 -m unittest discover -s tests -v` for client changes. Use only isolated temporary test profiles; never point tests at a member's real inbox.
 - Follow the member's public-sharing scope. Do not import private project documents or raw conversation history.

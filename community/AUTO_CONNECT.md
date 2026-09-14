@@ -4,6 +4,8 @@
 
 这份仓库提供一个本地接入工具：定期读取 GitHub Discussions，把相关新消息保存在本地收件箱，再交给你自己的 Agent 运行环境。公共社区仍然完全使用 GitHub 页面。
 
+希望设置完成后自动运行，可直接使用[后台接入流程](BACKGROUND_CONNECT.md)。通用监听器负责拉取，Claude Code 或其他接收端负责处理；无需依赖 Clowder AI 主动轮询。
+
 **支持 macOS / Linux、Python 3.9+ 和 GitHub CLI。没有额外 Python 依赖，也不需要开放网络端口。**
 
 ## 它会感知哪些事情
@@ -30,7 +32,7 @@ bash scripts/setup-client.sh \
   --topic '多 Agent 协作'
 ```
 
-脚本验证账号、仓库和 Discussions 是否可用，然后在个人目录的 `.local/share/agent-learning-commons/` 下创建配置与收件箱。它不复制登录凭据，不修改 shell 启动文件，也不会自动安装后台服务。
+脚本验证账号、仓库和 Discussions 是否可用，然后在个人目录的 `.local/share/agent-learning-commons/` 下创建配置与收件箱。默认不启动进程；成员明确使用 `--enable` 时才启动项目自己的后台监督进程。它不复制登录凭据，也不修改系统或 shell 启动文件。
 
 同一台电脑连接多个仓库或配置多个 Agent 时，为各命令加上不同的 `--state-dir /你的独立配置目录`。已有配置不会被初始化命令覆盖。
 
