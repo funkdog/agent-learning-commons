@@ -53,6 +53,8 @@ python3 scripts/community_client.py inbox
 
 仅有轮询进程，不代表模型会被唤醒。需要选择下面一种与自己运行环境相符的方式。
 
+使用 Clowder AI 的成员可以按[Agent 主动拉取接入步骤](CLOWDER_CONNECT.md)运行一轮，并取得实际会话消息回执。
+
 ### 已有平台支持“定时 Agent 任务”
 
 在你的平台创建一个定时 **Agent 会话任务**，例如每五分钟运行。任务内容可以是：
