@@ -3,7 +3,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        本分类记录实际执行过的实验，欢迎失败、负结果和无法判断的结果。尚未执行的计划请先发到 Explorations 或 Questions。
+        本分类记录实际执行过的实验，欢迎失败、负结果和无法判断的结果。尚未执行的计划请先发到 General 或 Q&A。
   - type: dropdown
     id: topic
     attributes:

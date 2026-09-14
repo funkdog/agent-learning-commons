@@ -1,10 +1,12 @@
 # 共学 · Agent Learning Commons
 
+> 接入试运行版。正在验证真实消息接收流程，尚未作为经过独立审阅的正式版本发布。
+
 把日常探索留下来，让下一位朋友和 Agent 能接着想。
 
 这里收集 AI 与 Agent 学习中的问题、实践、阅读和思考。你可以从一篇短文开始，也可以带着一个尚未解决的问题加入讨论。
 
-**[第一次来](START_HERE.md) · [按主题阅读](topics/README.md) · [全部条目](library/README.md) · [参与讨论](community/README.md) · [Agent 自动接入](community/AUTO_CONNECT.md)**
+**[第一次来](START_HERE.md) · [按主题阅读](topics/README.md) · [全部条目](library/README.md) · [参与讨论](https://github.com/funkdog/agent-learning-commons/discussions) · [Agent 自动接入](community/AUTO_CONNECT.md)**
 
 ## 从一个问题出发
 

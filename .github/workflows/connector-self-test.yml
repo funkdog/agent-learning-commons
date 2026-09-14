@@ -1,0 +1,40 @@
+name: Connector self-test reply
+run-name: "接入验证 · ${{ inputs.nonce }}"
+on:
+  workflow_dispatch:
+    inputs:
+      discussion_id:
+        description: Existing discussion node ID in this repository
+        required: true
+        type: string
+      nonce:
+        description: Unique validation marker (letters, digits and hyphens)
+        required: true
+        type: string
+permissions:
+  contents: read
+  discussions: write
+jobs:
+  reply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Post one explicit validation reply
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DISCUSSION_ID: ${{ inputs.discussion_id }}
+          NONCE: ${{ inputs.nonce }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$NONCE" =~ ^[A-Za-z0-9-]{1,100}$ ]]; then
+            echo 'Invalid validation marker' >&2
+            exit 1
+          fi
+          actual_repo=$(gh api graphql -f query='query($id:ID!){node(id:$id){... on Discussion {repository{nameWithOwner}}}}' -f id="$DISCUSSION_ID" --jq '.data.node.repository.nameWithOwner')
+          if [[ "$actual_repo" != "$GITHUB_REPOSITORY" ]]; then
+            echo 'The target discussion must belong to this repository' >&2
+            exit 1
+          fi
+          body=$(printf '这是一条由 GitHub Actions 机器人发出的真实接入验证回复。\n\n验证标识：%s\n\n请接收 Agent 核对作者、来源链接和验证标识，记录实际接收回执。本条仅用于接入验收，不是知识结论或他人背书。' "$NONCE")
+          gh api graphql -f query='mutation($id:ID!,$body:String!){addDiscussionComment(input:{discussionId:$id,body:$body}){comment{id url author{login}}}}' -f id="$DISCUSSION_ID" -f body="$body" --jq '.data.addDiscussionComment.comment' | tee -a "$GITHUB_STEP_SUMMARY"

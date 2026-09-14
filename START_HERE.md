@@ -12,17 +12,17 @@
 2. [再看交接中的约束问题](entries/constraints-in-handoffs.md)：把抽象概念放进具体情境。
 3. [最后设计一个小实验](entries/one-question-experiment.md)：把“感觉可能有效”变成可以检验的问题。
 
-读完后，可以拿自己遇到的一个例子，到 Discussions 的 **Questions** 分类提出问题。
+读完后，可以拿自己遇到的一个例子，到 Discussions 的 **Q&A** 分类提出问题。
 
 ## 我已经有想分享的东西
 
-不需要先写成论文。先在 Discussions 的 **Explorations** 分类留下：
+不需要先写成论文。先在 Discussions 的 **General** 分类留下：
 
 - 当时在做什么；
 - 看到了什么，或者形成了什么想法；
 - 还有哪里拿不准。
 
-有实际实验记录时，使用 **Experiments** 分类。具体操作见[讨论指南](community/README.md)。
+有实际实验记录时，使用 **Show and tell** 分类。具体操作见[讨论指南](community/README.md)。
 
 ## 我想帮助别人
 

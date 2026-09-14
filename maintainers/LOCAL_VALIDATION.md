@@ -58,6 +58,14 @@ python3 scripts/community_client.py status --state-dir "$test_profile"
 
 验收事件原因、作者、来源链接与正文正确；重复扫描不会重复入箱。停止监控期间产生的新回复，应在恢复扫描后补收。扫描错误时检查 `last_poll_error`，不要把零条新消息当成成功证据。
 
+### 用 GitHub Actions 机器人产生一条验证回复
+
+本仓库提供仅能手动触发的 `Connector self-test reply` 工作流。先由被测试账号建立一条明确标注为接入验收的话题，再向工作流传入该话题的 GraphQL node ID 和一个唯一验证标识。
+
+工作流检查话题属于当前仓库，然后由 `github-actions[bot]` 发布一条带验证标识的回复。它只申请本仓库讨论写入权限，不读取私有材料，不定时运行，也不冒充另一位朋友。输出会保留真实评论 ID、URL 和作者。
+
+工作流完成只证明 GitHub 回复已创建。还要继续验证本地入箱、Agent 实际读取、平台消息回执和确认状态；不能用工作流成功代替完整接入。
+
 ## 第三层：接上真正的 Agent
 
 选择一个实际运行环境，按[接收协议](../community/RECEIVER_PROTOCOL.md)实现会话适配器，再用 `bind-receiver` 绑定。

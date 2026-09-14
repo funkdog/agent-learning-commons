@@ -8,9 +8,9 @@
 
 | 你想做什么 | 从哪里开始 |
 | --- | --- |
-| 分享正在学习的东西 | Discussions → Explorations |
-| 请大家帮助理解一个问题 | Discussions → Questions |
-| 分享已经执行过的验证 | Discussions → Experiments |
+| 分享正在学习的东西 | Discussions → General |
+| 请大家帮助理解一个问题 | Discussions → Q&A |
+| 分享已经执行过的验证 | Discussions → Show and tell |
 | 修改已有文章，或提交独立可读的新条目 | Pull Request |
 
 如果讨论入口尚未启用，请先联系仓库维护者按[设置指南](maintainers/SETUP.md)完成配置。

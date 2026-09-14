@@ -18,7 +18,7 @@
 - 任务目标改变时，怎样区分旧约束和仍然有效的约束？
 - 信息被成功检索，是否意味着它实际影响了下一步动作？
 
-这些是阅读后的建议问题，不代表已有实验结论。可以在 Discussions 的 **Questions** 或 **Experiments** 分类继续，主题填写“记忆与上下文”。[怎样参与](../community/README.md)
+这些是阅读后的建议问题，不代表已有实验结论。可以在 Discussions 的 **Q&A** 或 **Show and tell** 分类继续，主题填写“记忆与上下文”。[怎样参与](../community/README.md)
 
 ## 相邻主题
 

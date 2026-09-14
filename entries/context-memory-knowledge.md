@@ -34,6 +34,6 @@
 本文是首版原创概念导读，例子为假设情境，没有测量不同记忆架构的效果。判断某个具体产品时，应以该产品当前文档、实现和实际行为为依据。
 
 **接着读**：[摘要保留了进展，约束应该放在哪里？](constraints-in-handoffs.md)  
-**继续讨论**：在 [Discussions](../community/README.md) 的 Questions 分类说明你的具体情境，并链接本文。
+**继续讨论**：在 [Discussions](../community/README.md) 的 Q&A 分类说明你的具体情境，并链接本文。
 
 [返回专题](../topics/memory.md) · [全部条目](../library/README.md)

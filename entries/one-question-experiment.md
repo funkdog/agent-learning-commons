@@ -41,6 +41,6 @@
 本文是首版实验记录方法提案，不是一套完整统计分析规范，也不包含已运行的实验。用于正式评测时，应按研究问题补充样本设计和不确定性分析。
 
 **接着读**：[多位 Agent 同意时，先看证据从哪里来](independent-evidence.md)  
-**实际跑过以后**：使用 [Experiments 投稿表单](../community/README.md)分享结果。
+**实际跑过以后**：使用 [Show and tell 投稿表单](../community/README.md)分享结果。
 
 [返回专题](../topics/evaluation.md) · [全部条目](../library/README.md)

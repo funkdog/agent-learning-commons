@@ -39,6 +39,6 @@
 首版原创提案，尚未执行对照实验。当前能交付的是问题、候选方案与反例方向；不能给出成功率或效果承诺。
 
 **接着做**：[让一个小实验只回答一个问题](one-question-experiment.md)  
-**继续讨论**：在 [Discussions](../community/README.md) 的 Experiments 分类分享实际验证过程，并链接本文。
+**继续讨论**：在 [Discussions](../community/README.md) 的 Show and tell 分类分享实际验证过程，并链接本文。
 
 [返回专题](../topics/memory.md) · [全部条目](../library/README.md)

@@ -2,7 +2,7 @@
 
 [返回首页](../README.md) · [维护指南](README.md)
 
-这份内容包使用 GitHub 原生 Markdown、Discussions 与 PR。仓库名和所属账号尚未绑定；所有正文导航使用仓库内相对链接。
+本仓库是 [funkdog/agent-learning-commons](https://github.com/funkdog/agent-learning-commons)，使用 GitHub 原生 Markdown、Discussions 与 PR。Discussions 已开启，三种表单使用 GitHub 已有的默认分类。下面的步骤也可供复制这套方案的新仓库使用。
 
 ## 1. 放入目标仓库
 
@@ -14,15 +14,15 @@
 
 仓库 Settings → General → Features → Discussions。只有提交表单文件不会自动开启讨论区。[GitHub 官方说明](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/enabling-or-disabling-github-discussions-for-a-repository)
 
-在 Discussions 中创建以下分类。为让模板准确匹配，分类名称先使用表中的英文名，中文写在说明中；创建后检查分类 slug 与文件名一致。
+使用 Discussions 已有的以下默认分类。表单文件按 GitHub 返回的实际分类 slug 命名，投稿字段使用中文；无需另建自定义分类。
 
 | 名称 | 格式 | 中文说明 | 对应表单文件 |
 | --- | --- | --- | --- |
-| Explorations | Open-ended discussion | 探索笔记：分享阅读、实践与尚未完成的思考 | `.github/DISCUSSION_TEMPLATE/explorations.yml` |
-| Questions | Question and answer | 提问求助：说清已尝试什么、卡在哪里 | `.github/DISCUSSION_TEMPLATE/questions.yml` |
-| Experiments | Open-ended discussion | 实验与复现：分享实际执行的过程、结果和反例 | `.github/DISCUSSION_TEMPLATE/experiments.yml` |
+| General | Open-ended discussion | 探索笔记：分享阅读、实践与尚未完成的思考 | `.github/DISCUSSION_TEMPLATE/general.yml` |
+| Q&A | Question and answer | 提问求助：说清已尝试什么、卡在哪里 | `.github/DISCUSSION_TEMPLATE/q-a.yml` |
+| Show and tell | Open-ended discussion | 实验与复现：分享实际执行的过程、结果和反例 | `.github/DISCUSSION_TEMPLATE/show-and-tell.yml` |
 
-现有默认分类可以保留；没有内容时再按需要精简。请勿为整理首版而删除已有社区讨论。
+其他默认分类继续保留。请勿为整理首版而删除已有社区讨论。
 
 表单文件必须位于默认分支，其文件名对应分类 slug。[分类管理](https://docs.github.com/en/discussions/managing-discussions-for-your-community/managing-categories-for-discussions) · [表单匹配规则](https://docs.github.com/en/discussions/managing-discussions-for-your-community/creating-discussion-category-forms)
 
@@ -45,7 +45,7 @@
 - 打开 README，按“第一次来 → 记忆专题 → 第一篇文章 → 下一篇”走一遍。
 - 从文章返回专题或完整目录，确认链接在 GitHub 页面中可用。
 - 打开 New discussion，分别选择三个分类，确认中文表单显示。
-- 检查 Experiments 要求填写实际执行记录；计划应进入 Explorations 或 Questions。
+- 检查 Show and tell 要求填写实际执行记录；计划应进入 General 或 Q&A。
 - 在一次真实、有意发布的投稿后，检查正文、署名和主题信息是否保留。不要为测试而制造假实验。
 - 提交一次实际需要的文档 PR，检查 PR 模板是否出现。
 

@@ -35,6 +35,6 @@
 本文是首版原创阅读方法提案，没有评价任何特定论文。它不能代替领域知识，也不能保证填完阅读卡就充分理解了一份材料。
 
 **接着读**：[多位 Agent 同意时，先看证据从哪里来](independent-evidence.md)  
-**分享阅读卡**：在 [Discussions](../community/README.md)选择 Explorations。
+**分享阅读卡**：在 [Discussions](../community/README.md)选择 General。
 
 [返回专题](../topics/reading.md) · [全部条目](../library/README.md)
